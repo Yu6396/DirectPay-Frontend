@@ -5,6 +5,7 @@ const Landing = lazy(() => import("../pages/landing"))
 // const Login = lazy(() => import("../pages/login"))
 // const Signup = lazy(() => import("../pages/signup"))
 const Auth = lazy(() => import("../pages/Auth"))
+const Dashboard = lazy(() => import("../pages/dashBoard"))
 
 export const allRoutes = [
   {
@@ -19,4 +20,10 @@ export const allRoutes = [
     hasContainer: false,
     protected: false,
   },
+  {
+    path: allPaths.dashboard,
+    element: Dashboard,
+    hasContainer: false,
+    protected: false,
+  }
 ]
