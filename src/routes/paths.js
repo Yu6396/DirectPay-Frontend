@@ -1,10 +1,14 @@
-import Dashboard from "../pages/dashBoard";
+
 
 
 export const allPaths = {
 
     landing: "/",
     dashboard: "/dashboard",
-    // signup: "/signup",
+    history: "/history",
+    settings: "/settings",
+    security: "/security",
+    fundWallet: "/fund-wallet",
+    notFound: "/404",
     auth: "/auth"
 }
