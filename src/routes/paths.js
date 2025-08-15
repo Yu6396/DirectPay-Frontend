@@ -9,6 +9,6 @@ export const allPaths = {
     settings: "/settings",
     security: "/security",
     fundWallet: "/fund-wallet",
-    notFound: "/404",
+    notFound: "*",
     auth: "/auth"
 }
