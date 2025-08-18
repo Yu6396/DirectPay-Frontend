@@ -1,27 +1,38 @@
-
-import React, { useState} from 'react';
-import { Button } from '../../components/ui/Button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/Card';
-import { Badge } from '../../components/ui/Badge';
-import { useNavigate } from 'react-router-dom';
-import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/Avatar';
-import { 
-  Wallet, 
-  Zap, 
-  Wifi, 
-  Tv, 
-  Smartphone, 
-  Droplets, 
-  GraduationCap, 
-  Shield, 
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { jwtDecode } from "jwt-decode";
+import {
+  Wallet,
+  Zap,
+  Wifi,
+  Tv,
+  Smartphone,
+  Droplets,
+  GraduationCap,
+  Shield,
   Landmark,
   Plus,
   History,
   Settings,
   LogOut,
   Eye,
-  EyeOff
-} from 'lucide-react';
+  EyeOff,
+} from "lucide-react";
+import { Button } from "../../components/ui/Button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../components/ui/Card";
+import { Badge } from "../../components/ui/Badge";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "../../components/ui/Avatar";
 
 const iconMap = {
   zap: Zap,
@@ -29,106 +40,136 @@ const iconMap = {
   tv: Tv,
   smartphone: Smartphone,
   droplets: Droplets,
-  'graduation-cap': GraduationCap,
+  "graduation-cap": GraduationCap,
   shield: Shield,
   landmark: Landmark,
 };
+
+const API_URL = "https://directpay-hcgw.onrender.com/api/v1/user";
+
 const Dashboard = () => {
-  // const [billCategories, setBillCategories] = useState([]);
-  // const [wallet, setWallet] = useState(null);
-  const [showBalance, setShowBalance] = useState(false);
-  // const [loading, setLoading] = useState(true);
-
   const navigate = useNavigate();
+  const [showBalance, setShowBalance] = useState(false);
+  const [wallet, setWallet] = useState(null);
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/auth");
+      return;
+    }
 
-  const billCategories=[
-    {
-    id: 1,
-    name: "Mobile Airtime",
-    description: "Top up your mobile phone",
-    icon_name: "smartphone",
-  },
-  {
-    id: 2,
-    name: "Electricity",
-    description: "Electricity bill payments",
-    icon_name: "zap",
-  },
-  {
-    id: 3,
-    name: "Internet",
-    description: "Internet and Data Subscription",
-    icon_name: "wifi",
-  },
-  {
-    id: 4,
-    name: "TV",
-    description: "Cable and Satellite TV Subscription",
-    icon_name: "tv",
-  },
-  {
-    id: 5,
-    name: "Education",
-    description: "School fees and educational payment",
-    icon_name: "graduation-cap",
-  },
-  {
-    id: 6,
-    name: "Government",
-    description: "Government services and taxes",
-    icon_name: "landmark",
-  },
-  {
-    id: 7,
-    name: "Water",
-    description: "Water bill payments",
-    icon_name: "droplets",
-  },
-  {
-    id: 8,
-    name: "Insurance",
-    description: "Insurance premiums payments",
-    icon_name: "shield",
-  },
-  ]
+    // Decode token to get email / user_id
+    let decoded = null;
+    try {
+      decoded = jwtDecode(token);
+    } catch (err) {
+      console.error("Invalid token", err);
+      navigate("/auth");
+    }
 
-  const wallet= {
-    balance: 500000000,
-    currency: "NGN",
-  }
+    // Fetch user info
+    axios
+      .get(`${API_URL}/get-user-profile`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => {
+        setUser(res.data?.data || null);
+        localStorage.setItem("user", JSON.stringify(res.data?.data));
+      })
+      .catch((err) => {
+        console.error("Error fetching user", err);
+        navigate("/auth");
+      });
 
+    // Fetch wallet
+    axios
+      .get(`${API_URL}/get-user-wallet`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => setWallet(res.data?.data || null))
+      .catch(() => {
+        setWallet({ balance: 0, currency: "NGN" });
+      });
+  }, [navigate]);
 
-
-  const formatCurrency = (amount, currency = 'NGN') => {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: currency,
-    }).format(amount);
+  const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/auth");
   };
 
-  const userData={
-    fullname: "Abayomi Obayemi",
-    email: "twodot40@gmail.com",
-  }
+  const formatCurrency = (amount, currency = "NGN") =>
+    new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency,
+    }).format(amount);
 
-  const getInitials = (name) => {
-    return name
-      .split(' ')
-      .map(word => word[0])
-      .join('')
+  // const getInitials = (first_name, last_name, email) => {
+  //   if (first_name || last_name) {
+  //     return `${first_name?.[0] || ""}${last_name?.[0] || ""}`.toUpperCase();
+  //   }
+  //   return email?.[0]?.toUpperCase() || "U";
+  // };
+
+  const getInitials = (name) =>
+    name
+      ?.split(" ")
+      .map((word) => word[0])
+      .join("")
       .toUpperCase()
       .slice(0, 2);
-  };
 
-
-//   if (loading) {
-//     return (
-//       <div className="min-h-screen flex items-center justify-center">
-//         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-//       </div>
-//     );
-//   }
-  
+  const billCategories = [
+    {
+      id: 1,
+      name: "Mobile Airtime",
+      description: "Top up your mobile phone",
+      icon_name: "smartphone",
+    },
+    {
+      id: 2,
+      name: "Electricity",
+      description: "Electricity bill payments",
+      icon_name: "zap",
+    },
+    {
+      id: 3,
+      name: "Internet",
+      description: "Internet and Data Subscription",
+      icon_name: "wifi",
+    },
+    {
+      id: 4,
+      name: "TV",
+      description: "Cable and Satellite TV Subscription",
+      icon_name: "tv",
+    },
+    {
+      id: 5,
+      name: "Education",
+      description: "School fees and educational payment",
+      icon_name: "graduation-cap",
+    },
+    {
+      id: 6,
+      name: "Government",
+      description: "Government services and taxes",
+      icon_name: "landmark",
+    },
+    {
+      id: 7,
+      name: "Water",
+      description: "Water bill payments",
+      icon_name: "droplets",
+    },
+    {
+      id: 8,
+      name: "Insurance",
+      description: "Insurance premiums payments",
+      icon_name: "shield",
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/5">
@@ -142,19 +183,31 @@ const Dashboard = () => {
               </h1>
               <Badge variant="secondary">Dashboard</Badge>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <Avatar className="h-8 w-8">
-                <AvatarImage  />
+                <AvatarImage />
                 <AvatarFallback>
-                  {getInitials(userData.fullname || userData.email || 'U')}
+                  {getInitials(
+                    user?.first_name || user?.last_name
+                      ? `${user?.first_name || ""} ${
+                          user?.last_name || ""
+                        }`.trim()
+                      : user?.email || "U"
+                  )}
                 </AvatarFallback>
               </Avatar>
               <div className="hidden sm:block">
-                <p className="text-sm font-medium">AO</p>
-                <p className="text-xs text-muted-foreground">twodot40@gmail.com</p>
+                <p className="text-sm font-medium">
+                  {user?.first_name || user?.last_name
+                    ? `${"hello" || ""} ${
+                        user?.first_name || ""
+                      }`.trim().toUpperCase()
+                    : user?.email || "User"}
+                </p>
+                <p className="text-xs text-muted-foreground">{user?.email}</p>
               </div>
-              <Button variant="ghost" size="sm" >
+              <Button variant="ghost" size="sm" onClick={logout}>
                 <LogOut className="h-4 w-4" />
               </Button>
             </div>
@@ -177,7 +230,11 @@ const Dashboard = () => {
                 onClick={() => setShowBalance(!showBalance)}
                 className="text-white hover:bg-white/20"
               >
-                {showBalance ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showBalance ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
               </Button>
             </div>
           </CardHeader>
@@ -186,16 +243,18 @@ const Dashboard = () => {
               <div>
                 <p className="text-sm opacity-90">Available Balance</p>
                 <p className="text-3xl font-bold">
-                  {showBalance 
-                    ? formatCurrency(wallet?.balance || 0, wallet?.currency)
-                    : '****'
-                  }
+                  {showBalance
+                    ? formatCurrency(
+                        wallet?.balance || 0,
+                        wallet?.currency || "NGN"
+                      )
+                    : "****"}
                 </p>
               </div>
-              <Button 
-                variant="secondary" 
+              <Button
+                variant="secondary"
                 size="sm"
-                onClick={() => navigate('/fund-wallet')}
+                onClick={() => navigate("/fund-wallet")}
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Fund Wallet
@@ -208,34 +267,34 @@ const Dashboard = () => {
         <div className="mb-8">
           <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="h-16 flex-col space-y-2"
-              onClick={() => navigate('/history')}
+              onClick={() => navigate("/history")}
             >
               <History className="h-5 w-5" />
               <span className="text-xs">History</span>
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="h-16 flex-col space-y-2"
-              onClick={() => navigate('/fund-wallet')}
+              onClick={() => navigate("/fund-wallet")}
             >
               <Plus className="h-5 w-5" />
               <span className="text-xs">Fund Wallet</span>
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="h-16 flex-col space-y-2"
-              onClick={() => navigate('/settings')}
+              onClick={() => navigate("/settings")}
             >
               <Settings className="h-5 w-5" />
               <span className="text-xs">Settings</span>
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="h-16 flex-col space-y-2"
-              onClick={() => navigate('/security')}
+              onClick={() => navigate("/security")}
             >
               <Shield className="h-5 w-5" />
               <span className="text-xs">Security</span>
@@ -249,12 +308,12 @@ const Dashboard = () => {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {billCategories.map((category) => {
               const Icon = iconMap[category.icon_name] || Zap;
-              
+
               return (
-                <Card 
-                  key={category.id} 
+                <Card
+                  key={category.id}
                   className="hover:shadow-lg transition-shadow cursor-pointer group"
-                  // onClick={() => navigate(`/pay-bill/${category.id}`)}
+                  onClick={() => navigate(`/pay-bill/${category.id}`)}
                 >
                   <CardContent className="p-6 text-center">
                     <div className="mb-4 flex justify-center">
@@ -262,8 +321,12 @@ const Dashboard = () => {
                         <Icon className="h-6 w-6 text-primary" />
                       </div>
                     </div>
-                    <h3 className="font-semibold text-sm mb-2">{category.name}</h3>
-                    <p className="text-xs text-muted-foreground">{category.description}</p>
+                    <h3 className="font-semibold text-sm mb-2">
+                      {category.name}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      {category.description}
+                    </p>
                   </CardContent>
                 </Card>
               );
@@ -275,7 +338,9 @@ const Dashboard = () => {
         <Card className="mt-8">
           <CardHeader>
             <CardTitle>Recent Transactions</CardTitle>
-            <CardDescription>Your latest bill payments and wallet activities</CardDescription>
+            <CardDescription>
+              Your latest bill payments and wallet activities
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-center py-8 text-muted-foreground">
@@ -290,6 +355,4 @@ const Dashboard = () => {
   );
 };
 
-
-
-export default Dashboard
+export default Dashboard;

@@ -1,11 +1,15 @@
 import { Input } from "../../components/ui/Input";
 import { Button } from "../../components/ui/Button";
-import { useNavigate } from "react-router";
-import { allPaths } from "../../routes/paths";
-import { placeholder } from "../../utils/placeholder";
-import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { Labels } from "../../components/ui/Labels";
-import { Eye, EyeOff, Mail,Lock} from "lucide-react";
+import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import axios from "axios";
+import {jwtDecode} from "jwt-decode"
+
+// import { toast } from "react-toastify";
+
+const API_URL = "https://directpay-hcgw.onrender.com/api/v1/user";
 
 const Signin = () => {
   const navigate = useNavigate();
@@ -17,6 +21,13 @@ const Signin = () => {
     password: "",
   });
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/dashboard"); // redirect if already logged in
+    }
+  }, [navigate]);
+
   function handleChange(e) {
     setInitialValues((prev) => ({
       ...prev,
@@ -26,9 +37,33 @@ const Signin = () => {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setLoading(true);
-    navigate(allPaths.landing);
+    try {
+      setLoading(true);
+
+      const response = await axios(`${API_URL}/login/user`,{
+        method: "POST",
+        data: initialValues,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      localStorage.setItem("token", response.headers.authorization);
+
+      const decodedToken = jwtDecode(response.headers.authorization);
+      localStorage.setItem("user", JSON.stringify(decodedToken));
+      console.log(decodedToken,);
+      
+      navigate("/dashboard");
+    } catch (error) {
+      console.log(error);
+
+    } finally {
+      setLoading(false);
+    }
   }
+
+  
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
