@@ -5,14 +5,12 @@ import { useState, useEffect } from "react";
 import { Labels } from "../../components/ui/Labels";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import axios from "axios";
-import {jwtDecode} from "jwt-decode"
-
-// import { toast } from "react-toastify";
+import { jwtDecode } from "jwt-decode";
 
 const API_URL = "https://directpay-hcgw.onrender.com/api/v1/user";
 
 const Signin = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -20,13 +18,13 @@ const Signin = () => {
     email: "",
     password: "",
   });
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      navigate("/dashboard"); // redirect if already logged in
-    }
-  }, [navigate]);
+  const navigate = useNavigate();
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
+  //   if (token) {
+  //     navigate("/dashboard");
+  //   }
+  // }, []);
 
   function handleChange(e) {
     setInitialValues((prev) => ({
@@ -40,7 +38,7 @@ const Signin = () => {
     try {
       setLoading(true);
 
-      const response = await axios(`${API_URL}/login/user`,{
+      const response = await axios(`${API_URL}/login/user`, {
         method: "POST",
         data: initialValues,
         headers: {
@@ -52,18 +50,15 @@ const Signin = () => {
 
       const decodedToken = jwtDecode(response.headers.authorization);
       localStorage.setItem("user", JSON.stringify(decodedToken));
-      console.log(decodedToken,);
-      
+      console.log(decodedToken);
+
       navigate("/dashboard");
     } catch (error) {
       console.log(error);
-
     } finally {
       setLoading(false);
     }
   }
-
-  
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">

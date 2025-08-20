@@ -4,6 +4,7 @@ import { allRoutes } from "./routes/routes"
 import Container from "./components/layout/container"
 import ProtectedRoute from "./commons/protectedRoute"
 
+
 export default function App() {
   const RenderRoute = ({ data }) => {
     const Element = data.element

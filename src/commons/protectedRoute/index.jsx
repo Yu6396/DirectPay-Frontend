@@ -28,7 +28,7 @@ const ProtectedRoute = ({ children }) => {
   const isAuthenticated =!!token
 
   if (!isAuthenticated) {
-    return <Navigate to={allPaths.login} />
+    return <Navigate to={allPaths.auth} />
   }
 
   return children

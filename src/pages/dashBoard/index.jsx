@@ -52,6 +52,7 @@ const Dashboard = () => {
   const [showBalance, setShowBalance] = useState(false);
   const [wallet, setWallet] = useState(null);
   const [user, setUser] = useState(null);
+  
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -170,6 +171,12 @@ const Dashboard = () => {
       icon_name: "shield",
     },
   ];
+  <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary">
+      </div>
+    </div>
+
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/5">

@@ -10,5 +10,7 @@ export const allPaths = {
     security: "/security",
     fundWallet: "/fund-wallet",
     notFound: "*",
-    auth: "/auth"
+    auth: "/auth",
+    success: "auth/success",
+    failure: "auth/failure",
 }

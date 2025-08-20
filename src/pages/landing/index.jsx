@@ -1,7 +1,6 @@
 import React from 'react'
 import { Button } from '../../components/ui/Button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/Card";
-import { Badge } from '../../components/ui/badge';
+import { Card, CardContent } from "../../components/ui/Card";
 import { useNavigate } from 'react-router-dom';
 import { 
   Zap, 
@@ -14,7 +13,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 
-// import { useAuth } from '@/contexts/AuthContext';
+
 const Landing = () => {
   const navigate = useNavigate();
 
