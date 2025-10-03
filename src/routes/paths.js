@@ -13,4 +13,5 @@ export const allPaths = {
     auth: "/auth",
     success: "auth/success",
     failure: "auth/failure",
+    billCategories : "/bill-categories"
 }

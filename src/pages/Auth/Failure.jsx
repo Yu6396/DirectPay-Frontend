@@ -4,13 +4,13 @@ import { useNavigate } from "react-router-dom";
 export default function AuthFailure() {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      navigate("/auth"); // send them back to login after 3s
-    }, 3000);
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     navigate("/auth"); 
+  //   }, 3000);
 
-    return () => clearTimeout(timer);
-  }, [navigate]);
+  //   return () => clearTimeout(timer);
+  // }, [navigate]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">

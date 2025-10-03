@@ -2,11 +2,10 @@ import React, { useEffect } from "react"
 import { Navigate, useNavigate } from "react-router"
 import { allPaths } from "../../routes/paths"
 import { jwtDecode } from "jwt-decode"
-import Cookies from "js-cookie"
 // import { Toastify } from "../../shared/toastify"
 
 const ProtectedRoute = ({ children }) => {
-  const token = Cookies.get("auth")
+  const token = localStorage.getItem("token")
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -15,7 +14,7 @@ const ProtectedRoute = ({ children }) => {
       const isExp = decoded.exp * 1000 < Date.now()
       try {
         if (isExp) {
-          Cookies.remove("auth")
+          localStorage.removeItem("token")
           navigate(allPaths.login)
           Toastify("error", "Session expired, please login")
         }
@@ -26,6 +25,8 @@ const ProtectedRoute = ({ children }) => {
   }, [token, navigate])
 
   const isAuthenticated =!!token
+
+  console.log("first:", isAuthenticated)
 
   if (!isAuthenticated) {
     return <Navigate to={allPaths.auth} />

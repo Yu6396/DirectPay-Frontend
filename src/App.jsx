@@ -9,15 +9,23 @@ export default function App() {
   const RenderRoute = ({ data }) => {
     const Element = data.element
 
-    const content = data.hasContainer ? (
-      <Container>
+    return data.protected ? (
+      <ProtectedRoute>
         <Element />
-      </Container>
+      </ProtectedRoute>
     ) : (
       <Element />
     )
 
-    return data.protected ? <ProtectedRoute>{content}</ProtectedRoute> : content
+    // const content = data.hasContainer ? (
+    //   <Container>
+    //     <Element />
+    //   </Container>
+    // ) : (
+    //   <Element />
+    // )
+
+    // return data.protected ? <ProtectedRoute>{content}</ProtectedRoute> : content
   }
 
   return (

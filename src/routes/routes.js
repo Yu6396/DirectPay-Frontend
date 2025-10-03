@@ -11,6 +11,7 @@ const Security = lazy(() => import("../pages/security"))
 const FundWallet = lazy(() => import("../pages/fundWallet"))
 const AuthSuccess = lazy(() => import("../pages/Auth/Success"))
 const AuthFailure = lazy(() => import("../pages/Auth/Failure"))
+const BillCategories = lazy(() => import("../pages/bills_categories"))
 
 
 
@@ -28,7 +29,7 @@ export const allRoutes = [
   {
     path: allPaths.dashboard,
     element: Dashboard,
-    protected: false,
+    protected: true,
   },
   {
     path: allPaths.history,
@@ -63,6 +64,11 @@ export const allRoutes = [
   {
     path: allPaths.failure,
     element: AuthFailure,
+    protected: false,
+  },
+  {
+    path: allPaths.billCategories,
+    element: BillCategories,
     protected: false,
   },
 

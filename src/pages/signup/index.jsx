@@ -1,54 +1,43 @@
 import { Input } from "../../components/ui/Input";
 import { Button } from "../../components/ui/Button";
 import { useNavigate } from "react-router";
-import { useState } from "react";
+import { useEffect } from "react";
 import { Labels } from "../../components/ui/Labels";
-import { Eye, EyeOff, Mail, User,Lock } from "lucide-react";
-import axios from "axios";
-const API_URL = "https://directpay-hcgw.onrender.com/api/v1/user";
+import { Eye, EyeOff, Mail, User, Lock } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { signupUser } from "../../redux/Auth/AuthAction";
+import {
+  setFormField,
+  resetForm,
+  resetSignupSuccess,
+  setShowpassword,
+} from "../../redux/Auth/AuthSlice";
 
 const Signup = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-   const [loading, setLoading] = useState(false);
-   const [showPassword, setShowPassword] = useState(false);
-
-  const [initialValues, setInitialValues] = useState({
-    first_name: "",
-    last_name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    phone_number: "",
-  });
-
-  function handleChange(e) {
-    setInitialValues((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  }
-
-  async function handleSubmit(e) {
+  const { form, signupSuccess, loading, error, showPassword } = useSelector(
+    (state) => state.auth
+  );
+  const handleChange = (e) => {
+    dispatch(setFormField({ field: e.target.name, value: e.target.value }));
+  };
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      setLoading(true);
-      const response = await axios(`${API_URL}/create/user`, {
-        method: "POST",
-        data: initialValues,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      localStorage.setItem("email",initialValues.email);
-      console.log(response.data.message);
+    dispatch(signupUser(form));
+  };
+  useEffect(() => {
+    if (signupSuccess) {
+      dispatch(resetForm());
       navigate("/auth");
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
+      dispatch(resetSignupSuccess());
     }
-    
-  }
+    if (error) {
+      error.message && alert(error.message);
+      dispatch(resetForm());
+      dispatch(resetSignupSuccess());
+    }
+  }, [signupSuccess, error, navigate, dispatch]);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -61,7 +50,7 @@ const Signup = () => {
             name="first_name"
             type="name"
             placeholder="Enter your first name"
-            value={initialValues.first_name}
+            value={form.first_name}
             onChange={handleChange}
             className="pl-10"
             required
@@ -77,7 +66,7 @@ const Signup = () => {
             name="last_name"
             type="name"
             placeholder="Enter your last name"
-            value={initialValues.last_name}
+            value={form.last_name}
             onChange={handleChange}
             className="pl-10"
             required
@@ -93,7 +82,7 @@ const Signup = () => {
             name="email"
             type="email"
             placeholder="Enter your email"
-            value={initialValues.email}
+            value={form.email}
             onChange={handleChange}
             className="pl-10"
             required
@@ -109,7 +98,7 @@ const Signup = () => {
             name="phone_number"
             type=""
             placeholder="Enter your phone number"
-            value={initialValues.phone_number}
+            value={form.phone_number}
             onChange={handleChange}
             className="pl-10"
             required
@@ -126,7 +115,7 @@ const Signup = () => {
             name="password"
             type={showPassword ? "text" : "password"}
             placeholder="Enter your password"
-            value={initialValues.password}
+            value={form.password}
             onChange={handleChange}
             className="pl-10 pr-10"
             required
@@ -136,36 +125,7 @@ const Signup = () => {
             variant="ghost"
             size="sm"
             className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-            onClick={() => setShowPassword(!showPassword)}
-          >
-            {showPassword ? (
-              <EyeOff className="h-4 w-4" />
-            ) : (
-              <Eye className="h-4 w-4" />
-            )}
-          </Button>
-        </div>
-      </div>
-      <div className="space-y-2">
-        <Labels htmlFor="password">Confirm Password</Labels>
-        <div className="relative">
-          <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-          <Input
-            id="confirmPassword"
-            name="confirmPassword"
-            type={showPassword ? "text" : "password"}
-            placeholder="confirm your password"
-            value={initialValues.confirmPassword}
-            onChange={handleChange}
-            className="pl-10 pr-10"
-            required
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-            onClick={() => setShowPassword(!showPassword)}
+            onClick={() => dispatch(setShowpassword(!showPassword))}
           >
             {showPassword ? (
               <EyeOff className="h-4 w-4" />
@@ -176,7 +136,7 @@ const Signup = () => {
         </div>
       </div>
 
-      <Button  type="submit" className="w-full" disabled={loading}>
+      <Button type="submit" className="w-full" disabled={loading}>
         {loading ? "Signing up..." : "Sign Up"}
       </Button>
     </form>
