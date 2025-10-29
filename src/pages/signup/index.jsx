@@ -1,9 +1,10 @@
+// src/pages/signup/index.jsx
 import { Input } from "../../components/ui/Input";
 import { Button } from "../../components/ui/Button";
 import { useNavigate } from "react-router";
 import { useEffect } from "react";
 import { Labels } from "../../components/ui/Labels";
-import { Eye, EyeOff, Mail, User, Lock } from "lucide-react";
+import { Eye, EyeOff, Mail, User, Lock, Phone } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { signupUser } from "../../redux/Auth/AuthAction";
 import {
@@ -19,36 +20,39 @@ const Signup = () => {
   const { form, signupSuccess, loading, error, showPassword } = useSelector(
     (state) => state.auth
   );
+
   const handleChange = (e) => {
     dispatch(setFormField({ field: e.target.name, value: e.target.value }));
   };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     dispatch(signupUser(form));
   };
+
   useEffect(() => {
     if (signupSuccess) {
-      dispatch(resetForm());
-      navigate("/auth");
+       localStorage.setItem("pendingEmail", form.email);
+       dispatch(resetForm());
+      navigate("/otp-verification");
       dispatch(resetSignupSuccess());
     }
+
     if (error) {
-      error.message && alert(error.message);
-      dispatch(resetForm());
-      dispatch(resetSignupSuccess());
+      console.log(error);
     }
-  }, [signupSuccess, error, navigate, dispatch]);
+  }, [signupSuccess, error, navigate, dispatch, form.email]);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Labels htmlFor="email">First Name</Labels>
+        <Labels htmlFor="first_name">First Name</Labels>
         <div className="relative">
           <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input
             id="first_name"
             name="first_name"
-            type="name"
+            type="text"
             placeholder="Enter your first name"
             value={form.first_name}
             onChange={handleChange}
@@ -57,14 +61,15 @@ const Signup = () => {
           />
         </div>
       </div>
+
       <div className="space-y-2">
-        <Labels htmlFor="email">Last Name</Labels>
+        <Labels htmlFor="last_name">Last Name</Labels>
         <div className="relative">
           <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input
             id="last_name"
             name="last_name"
-            type="name"
+            type="text"
             placeholder="Enter your last name"
             value={form.last_name}
             onChange={handleChange}
@@ -73,6 +78,7 @@ const Signup = () => {
           />
         </div>
       </div>
+
       <div className="space-y-2">
         <Labels htmlFor="email">Email</Labels>
         <div className="relative">
@@ -89,14 +95,14 @@ const Signup = () => {
           />
         </div>
       </div>
+
       <div className="space-y-2">
-        <Labels htmlFor="email">Phone Number</Labels>
+        <Labels htmlFor="phone_number">Phone Number</Labels>
         <div className="relative">
-          <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input
             id="phone_number"
             name="phone_number"
-            type=""
             placeholder="Enter your phone number"
             value={form.phone_number}
             onChange={handleChange}
@@ -125,7 +131,7 @@ const Signup = () => {
             variant="ghost"
             size="sm"
             className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-            onClick={() => dispatch(setShowpassword(!showPassword))}
+            onClick={() => dispatch(setShowpassword())}
           >
             {showPassword ? (
               <EyeOff className="h-4 w-4" />

@@ -16,16 +16,6 @@ export default function App() {
     ) : (
       <Element />
     )
-
-    // const content = data.hasContainer ? (
-    //   <Container>
-    //     <Element />
-    //   </Container>
-    // ) : (
-    //   <Element />
-    // )
-
-    // return data.protected ? <ProtectedRoute>{content}</ProtectedRoute> : content
   }
 
   return (

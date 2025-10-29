@@ -11,7 +11,10 @@ export const allPaths = {
     fundWallet: "/fund-wallet",
     notFound: "*",
     auth: "/auth",
-    success: "auth/success",
-    failure: "auth/failure",
-    billCategories : "/bill-categories"
+    success: "/auth/google-success",
+    failure: "/auth/google-failure",
+    billCategories : "/bill-categories",
+    otpVerification : "/otp-verification",
+    forgetPassword : "/forgot-password",
+    completeForgetPassword : "/complete-forget-password"
 }

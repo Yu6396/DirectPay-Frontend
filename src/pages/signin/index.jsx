@@ -1,41 +1,61 @@
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { loginUser } from "../../redux/Auth/AuthAction"; // adjust path
+import { resetForm, setFormField, setShowpassword } from "../../redux/Auth/AuthSlice";
 import { Input } from "../../components/ui/Input";
 import { Button } from "../../components/ui/Button";
-import { useNavigate } from "react-router";
-import { useEffect } from "react";
-import {useDispatch, useSelector} from 'react-redux'
-import { loginUser } from "../../redux/Auth/AuthAction";
-import { setFormField, resetForm, setShowpassword } from "../../redux/Auth/AuthSlice";
 import { Labels } from "../../components/ui/Labels";
-import { Eye, EyeOff, Mail, Lock } from "lucide-react";
-
+import { useToast } from "../../hooks/use-toast";
+import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
+import { allPaths } from "../../routes/paths";
 
 const Signin = () => {
- const dispatch = useDispatch();
- const navigate = useNavigate();
- const { form, loading, error, showPassword, isAuthenticated } = useSelector((state) => state.auth);
- const handleChange = (e) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const { form, loading, showPassword, isAuthenticated } = useSelector(
+    (state) => state.auth
+  );
+
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleChange = (e) => {
     dispatch(setFormField({ field: e.target.name, value: e.target.value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    dispatch(loginUser({ email: form.email, password: form.password }));
+    setSubmitting(true);
+    try {
+      await dispatch(
+        loginUser({ email: form.email, password: form.password })
+      ).unwrap();
+
+      toast({
+        title: "Login Successful ✅",
+        description: "Redirecting to your dashboard...",
+      });
+
+      setTimeout(() => navigate(allPaths.dashboard), 1500);
+    } catch (error) {
+      toast({
+        title: "Login Failed ❌",
+        description: error?.message || "Invalid credentials.",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/dashboard");
-    }
-    if (error) {
-      error.message && alert(error.message);
+      navigate(allPaths.dashboard);
       dispatch(resetForm());
     }
-  }, [isAuthenticated, error, navigate]);
-
-
- 
-
-  
+  }, [isAuthenticated, navigate]);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -75,7 +95,7 @@ const Signin = () => {
             variant="ghost"
             size="sm"
             className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-            onClick={() => setShowPassword(!showPassword)}
+            onClick={() => dispatch(setShowpassword(!showPassword))}
           >
             {showPassword ? (
               <EyeOff className="h-4 w-4" />
@@ -86,8 +106,14 @@ const Signin = () => {
         </div>
       </div>
 
-      <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? "Signing in..." : "Sign In"}
+      <Button type="submit" className="w-full" disabled={submitting || loading}>
+        {submitting || loading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Signing in...
+          </>
+        ) : (
+          "Sign In"
+        )}
       </Button>
     </form>
   );

@@ -1,38 +1,33 @@
-import React, { useEffect } from "react"
-import { Navigate, useNavigate } from "react-router"
-import { allPaths } from "../../routes/paths"
-import { jwtDecode } from "jwt-decode"
-// import { Toastify } from "../../shared/toastify"
+import React from "react";
+import { Navigate } from "react-router";
+import { jwtDecode } from "jwt-decode";
+import { allPaths } from "../../routes/paths";
 
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem("token")
-  const navigate = useNavigate()
+  const token = localStorage.getItem("token");
 
-  useEffect(() => {
-    if (token) {
-      const decoded = jwtDecode(token)
-      const isExp = decoded.exp * 1000 < Date.now()
-      try {
-        if (isExp) {
-          localStorage.removeItem("token")
-          navigate(allPaths.login)
-          Toastify("error", "Session expired, please login")
-        }
-      } catch (error) {
-        console.log("Error decoding token:", error)
-      }
-    }
-  }, [token, navigate])
-
-  const isAuthenticated =!!token
-
-  console.log("first:", isAuthenticated)
-
-  if (!isAuthenticated) {
-    return <Navigate to={allPaths.auth} />
+  if (!token) {
+    return <Navigate to={allPaths.auth} replace />;
   }
 
-  return children
-}
+  try {
+    const decoded = jwtDecode(token);
+    const isExpired = decoded.exp * 1000 < Date.now();
 
-export default ProtectedRoute
+    if (isExpired) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      return <Navigate to={allPaths.auth} replace />;
+    }
+  } catch (error) {
+    console.error("Error decoding token:", error);
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    return <Navigate to={allPaths.auth} replace />;
+  }
+
+  
+  return children;
+};
+
+export default ProtectedRoute;
