@@ -16,5 +16,6 @@ export const allPaths = {
     billCategories : "/bill-categories",
     otpVerification : "/otp-verification",
     forgetPassword : "/forgot-password",
-    completeForgetPassword : "/complete-forget-password"
+    completeForgetPassword : "/complete-forget-password",
+    getuser: "/get/"
 }

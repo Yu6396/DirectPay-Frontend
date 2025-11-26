@@ -1,8 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { jwtDecode } from "jwt-decode";
 import api from "../../instance/axiosInstance";
 import { toast } from "../../hooks/use-toast";
-import axios from "axios";
+
 
 const API_URL = "/user";
 
@@ -10,54 +9,85 @@ export const loginWithGoogle = createAsyncThunk(
   "auth/loginWithGoogle",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get("http://localhost:2029/auth/google/callback"); // Adjust path if needed
-      const { token, user } = response.data;
-
-      if (!token || !user) throw new Error("Google login failed");
-
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-
-      return { token, user };
-    } catch (error) {
-      return rejectWithValue({
-        message: error.response?.data?.message || "Google login failed",
+      const response = await api.get("/auth/google/callback", {
+        withCredentials: true,
       });
+
+      const user = response.data?.user;
+      if (!user) throw new Error("No user returned from Google login");
+
+      toast({
+        title: "Welcome 🎉",
+        description: `Logged in as ${user.first_name || user.email}`,
+      });
+
+      return { user };
+    } catch (error) {
+      const message = error.response?.data?.message || "Google login failed";
+      toast({
+        title: "Google Login Failed ❌",
+        description: message,
+        variant: "destructive",
+      });
+      return rejectWithValue({ message });
     }
   }
 );
 
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
-  async (userData, { rejectWithValue }) => {
+  async (credentials, { rejectWithValue }) => {
     try {
-      const response = await api.post(`${API_URL}/login/user`, userData);
+      await api.post(`${API_URL}/login/user`, credentials, {
+        withCredentials: true,
+      });
 
-      const token = response.headers?.authorization;
-      if (!token) throw new Error("Login failed: No token received.");
-
-      const decodedUser = jwtDecode(token);
+      const response  = await api.get(`${API_URL}/get-user-profile`, {
+        withCredentials: true,
+      });
 
       toast({
         title: "Login Successful 🎉",
-        description: `Welcome back, ${decodedUser?.first_name || "User"}!`,
+        description: `Welcome back, ${response.data.first_name || "User"}!`,
       });
 
-      return { token, user: decodedUser };
+      return { user: response.data };
     } catch (error) {
-      const message =
-        error.response?.data?.message || "Invalid credentials. Please try again.";
-
+      const message = error.response?.data?.message || "Login faileddddd";
       toast({
-        title: "Login Failed ❌",
+        title: "Login Failed",
         description: message,
         variant: "destructive",
       });
-
       return rejectWithValue({ message });
     }
   }
 );
+
+export const logoutUser = createAsyncThunk(
+  "auth/logoutUser",
+  async (_, { rejectWithValue }) => {
+    try {
+      await api.post(`${API_URL}/logout`, {}, { withCredentials: true });
+
+      toast({
+        title: "Logged Out 👋",
+        description: "You have been successfully logged out.",
+      });
+
+      return true;
+    } catch (error) {
+      const message = error.response?.data?.message || "Logout failed";
+      toast({
+        title: "Logout Failed ❌",
+        description: message,
+        variant: "destructive",
+      });
+      return rejectWithValue({ message });
+    }
+  }
+);
+
 
 export const signupUser = createAsyncThunk(
   "auth/signupUser",
@@ -67,21 +97,20 @@ export const signupUser = createAsyncThunk(
 
       toast({
         title: "Account Created 🎉",
-        description: "Your account has been successfully registered. Check your email for OTP verification.",
+        description:
+          "Your account has been registered. Check your email for OTP verification.",
       });
 
       return response.data;
     } catch (error) {
       const message =
-        error.response?.data?.message ||
+        error.response?.data?.error ||
         "Something went wrong while creating your account.";
-
       toast({
         title: "Signup Failed ❌",
         description: message,
         variant: "destructive",
       });
-
       return rejectWithValue({ message });
     }
   }
@@ -101,14 +130,13 @@ export const verifyOtp = createAsyncThunk(
       return response.data;
     } catch (error) {
       const message =
-        error.response?.data?.message || "Invalid or expired OTP. Please try again.";
-
+        error.response?.data?.message ||
+        "Invalid or expired OTP. Please try again.";
       toast({
         title: "Verification Failed ❌",
         description: message,
         variant: "destructive",
       });
-
       return rejectWithValue({ message });
     }
   }
@@ -129,13 +157,11 @@ export const resendOtp = createAsyncThunk(
     } catch (error) {
       const message =
         error.response?.data?.message || "Failed to resend OTP. Please try again.";
-
       toast({
         title: "Resend Failed ❌",
         description: message,
         variant: "destructive",
       });
-
       return rejectWithValue({ message });
     }
   }
@@ -145,7 +171,9 @@ export const startForgetPassword = createAsyncThunk(
   "auth/startForgetPassword",
   async ({ email }, { rejectWithValue }) => {
     try {
-      const response = await api.post(`${API_URL}/start-forget-password`, { email });
+      const response = await api.post(`${API_URL}/start-forget-password`, {
+        email,
+      });
 
       toast({
         title: "OTP Sent ✉️",
@@ -183,30 +211,33 @@ export const completeForgetPassword = createAsyncThunk(
 
       return response.data;
     } catch (error) {
-      const message = error.response?.data?.message || "Failed to reset password";
-      toast({ title: "Error ❌", description: message, variant: "destructive" });
+      const message =
+        error.response?.data?.message || "Failed to reset password";
+      toast({
+        title: "Error ❌",
+        description: message,
+        variant: "destructive",
+      });
       return rejectWithValue({ message });
     }
   }
 );
 
+
 export const getUserProfile = createAsyncThunk(
   "auth/getUserProfile",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get(`${API_URL}/get-user-profile`);
+      const response = await api.get(`${API_URL}/get-user-profile`, {
+        withCredentials: true,
+      });
 
-      return response.data?.data || response.data;
+      const user = response.data?.user || response.data?.data;
+
+      return user;
     } catch (error) {
       const message =
         error.response?.data?.message || "Failed to fetch user profile.";
-
-      toast({
-        title: "Error Fetching Profile ❌",
-        description: message,
-        variant: "destructive",
-      });
-
       return rejectWithValue({ message });
     }
   }

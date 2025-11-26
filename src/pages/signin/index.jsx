@@ -40,6 +40,7 @@ const Signin = () => {
 
       setTimeout(() => navigate(allPaths.dashboard), 1500);
     } catch (error) {
+      console.log("err",error)
       toast({
         title: "Login Failed ❌",
         description: error?.message || "Invalid credentials.",

@@ -5,16 +5,14 @@ const API_URL = "http://localhost:2029/api/v1";
 
 const api = axios.create({
   baseURL: API_URL,
-  timeout: 15000, // optional: 15s timeout for requests
+  timeout: 15000,
+  withCredentials: true, 
 });
 
 // ✅ REQUEST INTERCEPTOR
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
-    }
+    
     return config;
   },
   (error) => Promise.reject(error)
@@ -23,8 +21,7 @@ api.interceptors.request.use(
 // ✅ RESPONSE INTERCEPTOR
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    // 1️⃣ Network errors (no response)
+  async (error) => {
     if (!error.response) {
       toast({
         variant: "destructive",
@@ -34,40 +31,37 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    const { status, data } = error.response;
+    const { status } = error.response;
 
-    // 2️⃣ Unauthorized (session expired)
+    // 401 → Session expired or not logged in
     if (status === 401) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-
       toast({
         variant: "destructive",
         title: "Session Expired",
-        description: "Your session has expired. Please log in again.",
+        description: "Please log in again.",
       });
 
-      setTimeout(() => {
-        window.location.href = "/auth";
-      }, 1500);
+      // clear any stale data and redirect
+      localStorage.removeItem("user");
+      setTimeout(() => (window.location.href = "/auth"), 1500);
+      return Promise.reject(error);
     }
 
-    // 3️⃣ Server errors
+    // 500 → Server error
     if (status >= 500) {
       toast({
         variant: "destructive",
         title: "Server Error",
-        description:
-          data?.message || "Something went wrong on our end. Please try again later.",
+        description: "Something went wrong. Please try again later.",
       });
     }
 
-    // 4️⃣ Other known client errors
+    // 400–499 → Other client-side errors
     if (status >= 400 && status < 500 && status !== 401) {
       toast({
         variant: "destructive",
         title: "Request Failed",
-        description: data?.message || "An error occurred. Please try again.",
+        description: error.response.data?.message || "An error occurred.",
       });
     }
 

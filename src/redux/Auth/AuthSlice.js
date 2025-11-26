@@ -7,15 +7,15 @@ import {
   resendOtp,
   startForgetPassword,
   completeForgetPassword,
-  loginWithGoogle
+  loginWithGoogle,
+  logoutUser,
 } from "./AuthAction";
 
 const authSlice = createSlice({
   name: "auth",
   initialState: {
-    isAuthenticated: !!localStorage.getItem("token"),
-    token: localStorage.getItem("token") || null,
-    user: JSON.parse(localStorage.getItem("user")) || null,
+    isAuthenticated: false,
+    user: null,
     form: {
       first_name: "",
       last_name: "",
@@ -31,20 +31,12 @@ const authSlice = createSlice({
     showPassword: false,
     passwordReset: false,
     passwordResetToastShown: false,
-
   },
 
   reducers: {
     setFormField: (state, action) => {
       const { field, value } = action.payload;
       state.form[field] = value;
-    },
-    logout: (state) => {
-      state.isAuthenticated = false;
-      state.token = null;
-      state.user = null;
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
     },
     resetForm: (state) => {
       state.form = {
@@ -55,10 +47,10 @@ const authSlice = createSlice({
         password: "",
       };
     },
-     resetPasswordResetState: (state) => {
-    state.passwordReset = false;
-    state.passwordResetToastShown = false;
-  },
+    resetPasswordResetState: (state) => {
+      state.passwordReset = false;
+      state.passwordResetToastShown = false;
+    },
     resetSignupSuccess: (state) => {
       state.signupSuccess = false;
     },
@@ -80,15 +72,27 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.token = action.payload?.token;
         state.user = action.payload?.user;
         state.isAuthenticated = true;
-        localStorage.setItem("token", action.payload?.token);
-        localStorage.setItem("user", JSON.stringify(action.payload?.user));
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || "Login failed";
+      })
+
+      // LOGOUT
+      .addCase(logoutUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.loading = false;
+        state.isAuthenticated = false;
+        state.user = null;
+      })
+      .addCase(logoutUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || "Logout failed";
       })
 
       // SIGNUP
@@ -138,7 +142,7 @@ const authSlice = createSlice({
         state.error = action.payload?.message || "Failed to resend OTP";
       })
 
-      // USER PROFILE
+      // USER PROFILE (used to verify session)
       .addCase(getUserProfile.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -146,10 +150,13 @@ const authSlice = createSlice({
       .addCase(getUserProfile.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload;
+        state.isAuthenticated = true;
       })
-      .addCase(getUserProfile.rejected, (state, action) => {
+      .addCase(getUserProfile.rejected, (state) => {
         state.loading = false;
-        state.error = action.payload?.message || "Failed to fetch user profile";
+        state.isAuthenticated = false;
+        state.user = null;
+        
       })
 
       // START FORGET PASSWORD
@@ -183,27 +190,26 @@ const authSlice = createSlice({
         state.passwordReset = false;
         state.error = action.payload?.message || "Password reset failed";
       })
-       // Google login
-    .addCase(loginWithGoogle.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    })
-    .addCase(loginWithGoogle.fulfilled, (state, action) => {
-      state.loading = false;
-      state.token = action.payload.token;
-      state.user = action.payload.user;
-      state.isAuthenticated = true;
-    })
-    .addCase(loginWithGoogle.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload || "Google login failed";
-    });
+
+      // GOOGLE LOGIN (session version)
+      .addCase(loginWithGoogle.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(loginWithGoogle.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.isAuthenticated = true;
+      })
+      .addCase(loginWithGoogle.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Google login failed";
+      });
   },
 });
 
 export const {
   setFormField,
-  logout,
   resetForm,
   resetSignupSuccess,
   resetOtpState,

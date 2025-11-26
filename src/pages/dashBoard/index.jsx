@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { getUserProfile } from "../../redux/Auth/AuthAction";
+import { getUserProfile, logoutUser } from "../../redux/Auth/AuthAction";
 import { getUserWallet } from "../../redux/Wallet/WalletAction";
-import { logout } from "../../redux/Auth/AuthSlice";
+
 import {
   Wallet,
   Zap,
@@ -55,15 +55,16 @@ const Dashboard = () => {
 
 const { user, loading } = useSelector((state) => state.auth);
 const { wallet } = useSelector((state) => state.wallet);
+ const handleLogout = () => {
+    dispatch(logoutUser());
+    navigate("/auth");
+  };
   useEffect(() => {
     dispatch(getUserProfile());
     dispatch(getUserWallet());
   }, [dispatch]);
 
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate("/auth");
-  };
+ 
 
   const formatCurrency = (amount, currency = "NGN") =>
     new Intl.NumberFormat("en-NG", {

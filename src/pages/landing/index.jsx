@@ -75,7 +75,7 @@ const Landing = () => {
       </header>
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent">
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 ">
             Pay All Your Bills
             <br />
             <span className="text-foreground">In One Place</span>

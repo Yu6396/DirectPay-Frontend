@@ -6,6 +6,7 @@ import Signup from "../signup";
 import { Button } from "../../components/ui/Button";
 import { useNavigate } from "react-router";
 
+
 const Auth = () => {
   const [isActiveTab, setIsActiveTab] = useState(() => {
     
@@ -25,6 +26,7 @@ const Auth = () => {
   useEffect(() => {
     localStorage.setItem("activeTab", isActiveTab);
   }, [isActiveTab]);
+  
  
 
   return (

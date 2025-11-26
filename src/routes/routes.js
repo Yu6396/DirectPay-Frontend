@@ -16,6 +16,7 @@ const BillCategories = lazy(() => import("../pages/bills_categories"))
 const OTPVerification = lazy(() => import("../pages/OTPVerification"))
 const ForgetPassword = lazy(() => import("../pages//ForgetPassword"))
 const CompleteForgetPassword = lazy(() => import("../pages/ResetPassword"))
+const getUserProfile= lazy(()=> import("../pages/getProfile"))
 
 
 export const allRoutes = [
@@ -88,6 +89,7 @@ export const allRoutes = [
     path: allPaths.completeForgetPassword,
     element: CompleteForgetPassword,
     protected: false,
-  }
+  },
+ 
 
 ]
